@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sonosfer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,700;12..96,800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080808;
+      --bg2:       #0f0f0f;
+      --bg3:       #161616;
+      --bg4:       #1e1e1e;
+      --bg5:       #252525;
+      --accent:    #1ed760;
+      --accent-dim:#0f7a35;
+      --text:      #ffffff;
+      --text2:     #b3b3b3;
+      --text3:     #535353;
+      --border:    rgba(255,255,255,0.08);
+      --sidebar-w: 240px;
+      --player-h:  90px;
+      --radius:    8px;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+
+    body {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      grid-template-rows: 1fr var(--player-h);
+      grid-template-areas: "sidebar main" "player player";
+      height: 100vh;
+    }
+
+    /* ══ SIDEBAR ══ */
+    .sidebar {
+      grid-area: sidebar;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-top {
+      padding: 16px 12px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .logo-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-bottom: 8px;
+      margin-left: 8px;
+    }
+
+    .logo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: left center;
+      transform: scale(1.8) translateX(8px);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text2);
+      font-size: 13.5px;
+      font-weight: 500;
+      transition: all 0.15s;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+    }
+
+    .nav-item svg { flex-shrink: 0; }
+    .nav-item:hover { color: var(--text); }
+    .nav-item.active { color: var(--text); }
+
+    .sidebar-library {
+      flex: 1;
+      background: var(--bg2);
+      border-radius: 10px;
+      margin: 8px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .lib-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 16px 8px;
+      position: sticky;
+      top: 0;
+      background: var(--bg2);
+      z-index: 1;
+    }
+
+    .lib-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .lib-title:hover { color: var(--text); }
+
+    .lib-add {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: none;
+      border: none;
+      color: var(--text2);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .lib-add:hover { background: var(--bg4); color: var(--text); }
+
+    .lib-filters {
+      display: flex;
+      gap: 6px;
+      padding: 0 12px 12px;
+      flex-wrap: wrap;
+    }
+
+    .lib-chip {
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: var(--bg3);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+      border: none;
+    }
+    .lib-chip:hover { background: var(--bg5); }
+    .lib-chip.active { background: var(--text); color: var(--bg); }
+
+    .playlist-list { padding: 0 8px 8px; display: flex; flex-direction: column; gap: 2px; }
+
+    .pl-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+    .pl-item:hover { background: var(--bg3); }
+
+    .pl-thumb {
+      width: 44px; height: 44px;
+      border-radius: 6px;
+      background: var(--bg4);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    .pl-thumb.gradient-1 { background: linear-gradient(135deg, #450af5, #c4efd9); }
+    .pl-thumb.gradient-2 { background: linear-gradient(135deg, #e8115b, #f59b23); }
+    .pl-thumb.gradient-3 { background: linear-gradient(135deg, #509bf5, #121216); }
+    .pl-thumb.gradient-4 { background: linear-gradient(135deg, #1ed760, #002d14); }
+
+    .pl-info { overflow: hidden; }
+    .pl-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pl-meta { font-size: 11px; color: var(--text2); margin-top: 1px; }
+
+    /* ══ MAIN ══ */
+    main {
+      grid-area: main;
+      background: var(--bg2);
+      border-radius: 10px 10px 0 0;
+      margin: 8px 8px 0 0;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--bg5) transparent;
+      position: relative;
+    }
+
+    /* Hero gradient */
+    .main-hero-bg {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 340px;
+      background: linear-gradient(180deg, #1a3a26 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .main-content { position: relative; z-index: 1; }
+
+    /* Topbar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: transparent;
+      transition: background 0.3s;
+    }
+    .topbar.scrolled { background: rgba(26,58,38,0.95); backdrop-filter: blur(10px); }
+
+    .nav-arrows { display: flex; gap: 8px; }
+
+    .nav-arrow {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.6);
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      transition: background 0.15s;
+    }
+    .nav-arrow:hover { background: rgba(0,0,0,0.8); }
+
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+    .btn-signup {
+      background: none;
+      border: none;
+      color: var(--text2);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: color 0.15s;
+    }
+    .btn-signup:hover { color: var(--text); }
+
+    .btn-login {
+      background: var(--text);
+      border: none;
+      color: var(--bg);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 10px 24px;
+      border-radius: 20px;
+      transition: transform 0.1s, background 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .btn-login:hover { transform: scale(1.03); background: #f0f0f0; }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--bg5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .avatar:hover { background: var(--bg4); }
+
+    /* Greeting */
+    .greeting-section { padding: 0 24px 24px; }
+
+    .greeting-title {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 20px;
+    }
+
+    /* Quick picks grid */
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .quick-card {
+      background: var(--bg3);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .quick-card:hover { background: var(--bg5); }
+    .quick-card:hover .quick-play { opacity: 1; transform: translateY(0); }
+
+    .quick-thumb {
+      width: 56px; height: 56px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+
+    .quick-thumb.g1 { background: linear-gradient(135deg, #450af5, #8e8ee5); }
+    .quick-thumb.g2 { background: linear-gradient(135deg, #e91429, #f59b23); }
+    .quick-thumb.g3 { background: linear-gradient(135deg, #509bf5, #233a7e); }
+    .quick-thumb.g4 { background: linear-gradient(135deg, #1ed760, #004d1f); }
+    .quick-thumb.g5 { background: linear-gradient(135deg, #bc5900, #f59b23); }
+    .quick-thumb.g6 { background: linear-gradient(135deg, #8400cc, #c4efd9); }
+
+    .quick-name {
+      font-size: 13px;
+      font-weight: 700;
+      flex: 1;
+      padding-right: 8px;
+    }
+
+    .quick-play {
+      position: absolute;
+      right: 12px;
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.2s, transform 0.2s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      flex-shrink: 0;
+    }
+
+    /* Sections */
+    .section { padding: 24px 24px 0; }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    .section-more {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text2);
+      cursor: pointer;
+      transition: color 0.15s;
+      padding-bottom: 2px;
+    }
+    .section-more:hover { color: var(--text); text-decoration: underline; }
+
+    /* Cards scroll row */
+    .cards-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--bg3);
+      border-radius: 8px;
+      padding: 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .card:hover { background: var(--bg4); }
+    .card:hover .card-play { opacity: 1; transform: translateY(0); }
+
+    .card-img {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      background: var(--bg5);
+      margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 42px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    .card-img.artist { border-radius: 50%; }
+
+    .card-play {
+      position: absolute;
+      bottom: 8px; right: 8px;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.2s, transform 0.2s;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    .card-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .card-sub { font-size: 12px; color: var(--text2); line-height: 1.4; }
+
+    /* Recently played list */
+    .song-list { display: flex; flex-direction: column; }
+
+    .song-row {
+      display: grid;
+      grid-template-columns: 16px 4fr 3fr 1fr;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .song-row:hover { background: var(--bg3); }
+    .song-row:hover .s-num { display: none; }
+    .song-row:hover .s-play { display: flex; }
+
+    .s-num { color: var(--text2); font-size: 14px; text-align: center; font-family: 'DM Mono', monospace; }
+    .s-play { display: none; align-items: center; justify-content: center; color: var(--text); font-size: 13px; }
+
+    .s-info { display: flex; align-items: center; gap: 12px; overflow: hidden; }
+    .s-thumb { width: 40px; height: 40px; border-radius: 4px; background: var(--bg4); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .s-name { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .s-artist { font-size: 12px; color: var(--text2); margin-top: 2px; }
+    .s-album { font-size: 13px; color: var(--text2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .s-dur { font-size: 13px; color: var(--text2); text-align: right; font-family: 'DM Mono', monospace; letter-spacing: 0.05em; }
+
+    .songs-header {
+      display: grid;
+      grid-template-columns: 16px 4fr 3fr 1fr;
+      gap: 16px;
+      padding: 0 16px 8px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 4px;
+    }
+    .songs-header span {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text3);
+    }
+    .songs-header .dur-head { text-align: right; }
+
+    .section-bottom { height: 32px; }
+
+    /* ══ PLAYER ══ */
+    .player {
+      grid-area: player;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      align-items: center;
+      padding: 0 16px;
+    }
+
+    /* Track info */
+    .track-info { display: flex; align-items: center; gap: 12px; overflow: hidden; }
+
+    .track-thumb {
+      width: 52px; height: 52px;
+      border-radius: 4px;
+      background: linear-gradient(135deg, #1ed760, #002d14);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+
+    .track-text { overflow: hidden; }
+    .track-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-artist { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+    .track-heart {
+      margin-left: 12px;
+      background: none;
+      border: none;
+      color: var(--text2);
+      cursor: pointer;
+      font-size: 18px;
+      transition: color 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+    .track-heart:hover { color: var(--text); transform: scale(1.1); }
+    .track-heart.liked { color: var(--accent); }
+
+    /* Controls */
+    .player-controls { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+    .ctrl-btns { display: flex; align-items: center; gap: 20px; }
+
+    .ctrl-btn {
+      background: none; border: none;
+      color: var(--text2); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.12s, transform 0.1s;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    .ctrl-btn:hover { color: var(--text); transform: scale(1.08); }
+    .ctrl-btn.active { color: var(--accent); }
+
+    .play-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--text);
+      border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.15s;
+      color: var(--bg);
+    }
+    .play-btn:hover { transform: scale(1.06); background: #f0f0f0; }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .time-label {
+      font-size: 10px;
+      color: var(--text2);
+      font-family: 'DM Mono', monospace;
+      min-width: 30px;
+    }
+    .time-label.end { text-align: right; }
+
+    .progress-track {
+      flex: 1;
+      height: 4px;
+      background: var(--bg5);
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+    .progress-track:hover .progress-fill { background: var(--accent); }
+    .progress-track:hover::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: var(--p, 35%);
+      transform: translate(-50%, -50%);
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--text);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--text2);
+      border-radius: 2px;
+      width: 35%;
+      transition: background 0.15s, width 0.1s linear;
+    }
+
+    /* Volume */
+    .player-right {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .vol-icon { color: var(--text2); cursor: pointer; background: none; border: none; display: flex; align-items: center; transition: color 0.15s; }
+    .vol-icon:hover { color: var(--text); }
+
+    .vol-track {
+      width: 88px;
+      height: 4px;
+      background: var(--bg5);
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+    .vol-track:hover .vol-fill { background: var(--accent); }
+
+    .vol-fill {
+      height: 100%;
+      width: 70%;
+      background: var(--text2);
+      border-radius: 2px;
+      transition: background 0.15s;
+    }
+
+    /* Scrollbar */
+    main::-webkit-scrollbar { width: 8px; }
+    main::-webkit-scrollbar-thumb { background: var(--bg5); border-radius: 4px; }
+    .sidebar-library::-webkit-scrollbar { display: none; }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .greeting-section { animation: fadeUp 0.4s ease both; }
+    .section { animation: fadeUp 0.4s ease both; }
+    .section:nth-child(3) { animation-delay: 0.05s; }
+    .section:nth-child(4) { animation-delay: 0.1s; }
+    .section:nth-child(5) { animation-delay: 0.15s; }
+
+    /* Now playing indicator */
+    .now-playing-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 14px;
+    }
+    .bar {
+      width: 3px;
+      background: var(--accent);
+      border-radius: 1px;
+      animation: bounce 0.8s ease infinite alternate;
+    }
+    .bar:nth-child(2) { animation-delay: 0.2s; }
+    .bar:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      from { height: 3px; }
+      to   { height: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="logo-wrap">
+      <img src="logo.png" alt="S">
+    </div>
+
+    <a class="nav-item active" href="#">
+      <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577l-7.5-4.33zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33A2 2 0 0 1 22 7.577V21a1 1 0 0 1-1 1h-6.5a1 1 0 0 1-1-1v-6h-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732l7.5-4.33z"/></svg>
+      Inicio
+    </a>
+    <a class="nav-item" href="#">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Buscar
+    </a>
+  </div>
+
+  <div class="sidebar-library">
+    <div class="lib-header">
+      <div class="lib-title">
+        <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M3 22a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1zM15.5 2.134A1 1 0 0 0 14 3v18a1 1 0 0 0 1.5.866l11-9a1 1 0 0 0 0-1.732l-11-9zM6 22a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1z"/></svg>
+        Tu biblioteca
+      </div>
+      <button class="lib-add">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+      </button>
+    </div>
+
+    <div class="lib-filters">
+      <button class="lib-chip active">Listas</button>
+      <button class="lib-chip">Álbumes</button>
+      <button class="lib-chip">Artistas</button>
+    </div>
+
+    <div class="playlist-list">
+      <div class="pl-item" onclick="selectPlaylist(this, 'Mis favoritos', '♥')">
+        <div class="pl-thumb gradient-1"></div>
+        <div class="pl-info">
+          <div class="pl-name">Mis favoritos</div>
+          <div class="pl-meta">Lista · 34 canciones</div>
+        </div>
+      </div>
+      <div class="pl-item" onclick="selectPlaylist(this, 'Noche tranquila', '🌙')">
+        <div class="pl-thumb gradient-2"></div>
+        <div class="pl-info">
+          <div class="pl-name">Noche tranquila</div>
+          <div class="pl-meta">Lista · 18 canciones</div>
+        </div>
+      </div>
+      <div class="pl-item" onclick="selectPlaylist(this, 'Energía máxima', '⚡')">
+        <div class="pl-thumb gradient-3"></div>
+        <div class="pl-info">
+          <div class="pl-name">Energía máxima</div>
+          <div class="pl-meta">Lista · 22 canciones</div>
+        </div>
+      </div>
+      <div class="pl-item" onclick="selectPlaylist(this, 'Lo-fi estudio', '☕')">
+        <div class="pl-thumb gradient-4"></div>
+        <div class="pl-info">
+          <div class="pl-name">Lo-fi estudio</div>
+          <div class="pl-meta">Lista · 41 canciones</div>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-thumb" style="background:var(--bg4)">🎸</div>
+        <div class="pl-info">
+          <div class="pl-name">Rock clásico</div>
+          <div class="pl-meta">Lista · 29 canciones</div>
+        </div>
+      </div>
+      <div class="pl-item">
+        <div class="pl-thumb" style="background:var(--bg4)">🎹</div>
+        <div class="pl-info">
+          <div class="pl-name">Piano suave</div>
+          <div class="pl-meta">Lista · 15 canciones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══ -->
+<main id="main-scroll">
+  <div class="main-hero-bg"></div>
+  <div class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar" id="topbar">
+      <div class="nav-arrows">
+        <button class="nav-arrow">&#8249;</button>
+        <button class="nav-arrow">&#8250;</button>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-signup">Registrarse</button>
+        <button class="btn-login">Iniciar sesión</button>
+      </div>
+    </div>
+
+    <!-- Greeting -->
+    <div class="greeting-section">
+      <h1 class="greeting-title">Buenas tardes</h1>
+      <div class="quick-grid">
+        <div class="quick-card" onclick="playSong('Mis favoritos', 'Lista', '♥')">
+          <div class="quick-thumb g1"></div>
+          <span class="quick-name">Mis favoritos</span>
+          <div class="quick-play">
+            <svg width="18" height="18" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <div class="quick-card" onclick="playSong('In the End', 'Linkin Park', '🎸')">
+          <div class="quick-thumb g2"></div>
+          <span class="quick-name">In the End</span>
+          <div class="quick-play">
+            <svg width="18" height="18" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <div class="quick-card" onclick="playSong('Energía máxima', 'Lista', '⚡')">
+          <div class="quick-thumb g3"></div>
+          <span class="quick-name">Energía máxima</span>
+          <div class="quick-play">
+            <svg width="18" height="18" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <div class="quick-card" onclick="playSong('Lo-fi estudio', 'Lista', '☕')">
+          <div class="quick-thumb g4"></div>
+          <span class="quick-name">Lo-fi estudio</span>
+          <div class="quick-play">
+            <svg width="18" height="18" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <div class="quick-card" onclick="playSong('Rock clásico', 'Lista', '🎸')">
+          <div class="quick-thumb g5"></div>
+          <span class="quick-name">Rock clásico</span>
+          <div class="quick-play">
+            <svg width="18" height="18" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+        <div class="quick-card" onclick="playSong('Noche tranquila', 'Lista', '🌙')">
+          <div class="quick-thumb g6"></div>
+          <span class="quick-name">Noche tranquila</span>
+          <div class="quick-play">
+            <svg width="18" height="18" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Artistas -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-title">Artistas que te gustan</span>
+        <span class="section-more">Ver todo</span>
+      </div>
+      <div class="cards-row">
+        <div class="card" onclick="playSong('Linkin Park Mix', 'Linkin Park', '🎸')">
+          <div class="card-img artist" style="background:linear-gradient(135deg,#1a1a2e,#e94560)">🎸</div>
+          <div class="card-play"><svg width="20" height="20" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="card-title">Linkin Park</div>
+          <div class="card-sub">Artista</div>
+        </div>
+        <div class="card" onclick="playSong('The Weeknd Mix', 'The Weeknd', '🌃')">
+          <div class="card-img artist" style="background:linear-gradient(135deg,#1a0533,#e056fd)">🌃</div>
+          <div class="card-play"><svg width="20" height="20" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="card-title">The Weeknd</div>
+          <div class="card-sub">Artista</div>
+        </div>
+        <div class="card" onclick="playSong('Dua Lipa Mix', 'Dua Lipa', '💫')">
+          <div class="card-img artist" style="background:linear-gradient(135deg,#0d3b6e,#56c8e1)">💫</div>
+          <div class="card-play"><svg width="20" height="20" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="card-title">Dua Lipa</div>
+          <div class="card-sub">Artista</div>
+        </div>
+        <div class="card" onclick="playSong('Glass Animals Mix', 'Glass Animals', '🌊')">
+          <div class="card-img artist" style="background:linear-gradient(135deg,#003d1f,#1ed760)">🌊</div>
+          <div class="card-play"><svg width="20" height="20" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="card-title">Glass Animals</div>
+          <div class="card-sub">Artista</div>
+        </div>
+        <div class="card" onclick="playSong('Olivia Rodrigo Mix', 'Olivia Rodrigo', '🎭')">
+          <div class="card-img artist" style="background:linear-gradient(135deg,#3d0018,#f059a0)">🎭</div>
+          <div class="card-play"><svg width="20" height="20" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <div class="card-title">Olivia Rodrigo</div>
+          <div class="card-sub">Artista</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tendencias -->
+    <div class="section">
+      <div class="section-head">
+        <span class="section-title">Tendencias ahora</span>
+        <span class="section-more">Ver todo</span>
+      </div>
+      <div class="songs-header">
+        <span>#</span>
+        <span>Título</span>
+        <span>Álbum</span>
+        <span class="dur-head">
+          <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5v5.25l4.5 2.67-.75 1.23L11 13V7h1.5z"/></svg>
+        </span>
+      </div>
+      <div class="song-list" id="song-list"></div>
+    </div>
+
+    <div class="section-bottom"></div>
+  </div>
+</main>
+
+<!-- ══ PLAYER ══ -->
+<footer class="player">
+  <!-- Track -->
+  <div class="track-info">
+    <div class="track-thumb" id="track-thumb">🎵</div>
+    <div class="track-text">
+      <div class="track-name" id="track-name">In the End</div>
+      <div class="track-artist" id="track-artist">Linkin Park</div>
+    </div>
+    <button class="track-heart" id="track-heart" onclick="toggleHeart()">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </button>
+  </div>
+
+  <!-- Controls -->
+  <div class="player-controls">
+    <div class="ctrl-btns">
+      <button class="ctrl-btn" title="Aleatorio">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+      </button>
+      <button class="ctrl-btn" title="Anterior">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+      </button>
+      <button class="play-btn" id="play-btn" onclick="togglePlay()">
+        <svg id="play-icon" width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="ctrl-btn" title="Siguiente">
+        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM16 6h2v12h-2z"/></svg>
+      </button>
+      <button class="ctrl-btn" title="Repetir">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+      </button>
+    </div>
+    <div class="progress-row">
+      <span class="time-label" id="time-cur">0:00</span>
+      <div class="progress-track" id="progress-track" onclick="seek(event)">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span class="time-label end">3:36</span>
+    </div>
+  </div>
+
+  <!-- Volume -->
+  <div class="player-right">
+    <button class="vol-icon">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+    </button>
+    <div class="vol-track" onclick="setVol(event)">
+      <div class="vol-fill" id="vol-fill"></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Songs data
+  const songs = [
+    { n:1, e:'🎸', name:'In the End',      artist:'Linkin Park',    album:'Hybrid Theory',    dur:'3:36' },
+    { n:2, e:'🎸', name:'One Step Closer', artist:'Linkin Park',    album:'Hybrid Theory',    dur:'2:35' },
+    { n:3, e:'🎸', name:'Papercut',        artist:'Linkin Park',    album:'Hybrid Theory',    dur:'3:04' },
+    { n:4, e:'🌃', name:'Blinding Lights', artist:'The Weeknd',     album:'After Hours',      dur:'3:22' },
+    { n:5, e:'💫', name:'Levitating',      artist:'Dua Lipa',       album:'Future Nostalgia', dur:'3:23' },
+    { n:6, e:'🌊', name:'Heat Waves',      artist:'Glass Animals',  album:'Dreamland',        dur:'3:59' },
+    { n:7, e:'🎭', name:'good 4 u',        artist:'Olivia Rodrigo', album:'SOUR',             dur:'2:58' },
+  ];
+
+  let nowPlaying = 0;
+  let nowPlayingEl = null;
+
+  const list = document.getElementById('song-list');
+  songs.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'song-row';
+    row.dataset.index = i;
+    row.innerHTML = `
+      <div>
+        <span class="s-num" id="num-${i}">${s.n}</span>
+        <span class="s-play">▶</span>
+      </div>
+      <div class="s-info">
+        <div class="s-thumb">${s.e}</div>
+        <div>
+          <div class="s-name" id="sname-${i}">${s.name}</div>
+          <div class="s-artist">${s.artist}</div>
+        </div>
+      </div>
+      <div class="s-album">${s.album}</div>
+      <div class="s-dur">${s.dur}</div>
+    `;
+    row.addEventListener('click', () => playSong(s.name, s.artist, s.e, i));
+    list.appendChild(row);
+  });
+
+  // Player state
+  let playing = false;
+  let progress = 0;
+  let interval;
+
+  function togglePlay() {
+    playing = !playing;
+    const icon = document.getElementById('play-icon');
+    if (playing) {
+      icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+      startProgress();
+    } else {
+      icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      clearInterval(interval);
+    }
+  }
+
+  function startProgress() {
+    clearInterval(interval);
+    interval = setInterval(() => {
+      if (!playing) return;
+      progress = Math.min(progress + 0.05, 100);
+      document.getElementById('progress-fill').style.width = progress + '%';
+      const totalSec = 216;
+      const cur = Math.round(progress / 100 * totalSec);
+      const m = Math.floor(cur / 60);
+      const s = cur % 60;
+      document.getElementById('time-cur').textContent = m + ':' + String(s).padStart(2,'0');
+    }, 100);
+  }
+
+  function playSong(name, artist, emoji, index) {
+    document.getElementById('track-name').textContent = name;
+    document.getElementById('track-artist').textContent = artist;
+    document.getElementById('track-thumb').textContent = emoji;
+    progress = 0;
+
+    // Reset previous
+    if (nowPlayingEl !== null) {
+      const prev = document.getElementById('num-' + nowPlayingEl);
+      if (prev) prev.textContent = nowPlayingEl + 1;
+    }
+
+    // Show bars on current
+    if (index !== undefined) {
+      nowPlayingEl = index;
+      const numEl = document.getElementById('num-' + index);
+      if (numEl) {
+        numEl.innerHTML = `<div class="now-playing-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>`;
+      }
+    }
+
+    playing = true;
+    const icon = document.getElementById('play-icon');
+    icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+    startProgress();
+  }
+
+  function seek(e) {
+    const rect = document.getElementById('progress-track').getBoundingClientRect();
+    progress = ((e.clientX - rect.left) / rect.width) * 100;
+    document.getElementById('progress-fill').style.width = progress + '%';
+  }
+
+  function setVol(e) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const v = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
+    document.getElementById('vol-fill').style.width = v + '%';
+  }
+
+  let hearted = false;
+  function toggleHeart() {
+    hearted = !hearted;
+    const btn = document.getElementById('track-heart');
+    btn.classList.toggle('liked', hearted);
+    btn.innerHTML = hearted
+      ? '<svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+      : '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+  }
+
+  function selectPlaylist(el, name, emoji) {
+    playSong(name, 'Lista de reproducción', emoji);
+  }
+
+  // Topbar scroll effect
+  document.getElementById('main-scroll').addEventListener('scroll', function() {
+    document.getElementById('topbar').classList.toggle('scrolled', this.scrollTop > 60);
+  });
+
+  // Start with song playing
+  playSong('In the End', 'Linkin Park', '🎸', 0);
+</script>
+</body>
+</html>
