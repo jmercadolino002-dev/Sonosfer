@@ -126,6 +126,7 @@ async function loadSongs() {
 
   list.innerHTML = '';
   songs.forEach((s, i) => {
+    covers[id] = (await getAlbumCover(id)).cover_url || null;
     const cover = covers[s.album_id];
     const row = document.createElement('div');
     row.className = 'song-row';
@@ -449,7 +450,8 @@ async function doSearch(q) {
 
 // ── SIDEBAR ──
 async function loadSidebarArtists() {
-  const artists = await getArtists();
+  const imgData = await getArtistImage(artist.id);
+  const img = imgData.image_url || '';
   const list = document.getElementById('sidebar-list');
   if (!list) return;
   list.innerHTML = artists.map(a => `
