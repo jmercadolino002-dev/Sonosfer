@@ -44,7 +44,7 @@ async function renderHome() {
       </div>
       <div class="songs-header">
         <span>#</span><span>Título</span><span>Álbum</span>
-        <span class="dur-head"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5v5.25l4.5 2.67-.75 1.23L11 13V7h1.5z"/></svg></span>
+        <span class="dur-head">⏱</span>
       </div>
       <div class="song-list" id="song-list"></div>
     </div>
@@ -190,7 +190,7 @@ async function renderArtist(artistId) {
       </button>
       <div class="songs-header">
         <span>#</span><span>Título</span><span>Álbum</span>
-        <span class="dur-head"><svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5 5v5.25l4.5 2.67-.75 1.23L11 13V7h1.5z"/></svg></span>
+        <span class="dur-head">⏱</span>
       </div>
       <div class="song-list" id="artist-songs"></div>
     </div>
