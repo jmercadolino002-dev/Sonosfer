@@ -5,13 +5,12 @@ function navigate(page, id = null) {
   document.getElementById('main-scroll').scrollTo(0, 0);
 
   switch (page) {
-    case 'home':   renderHome(); break;
-    case 'search': renderSearch(); break;
-    case 'artist': renderArtist(id); break;
-    case 'album':  renderAlbum(id); break;
+    case 'home':   window.renderHome(); break;
+    case 'search': window.renderSearch(); break;
+    case 'artist': window.renderArtist(id); break;
+    case 'album':  window.renderAlbum(id); break;
   }
 }
-
 document.querySelectorAll('.nav-item[data-page]').forEach(item => {
   item.addEventListener('click', e => {
     e.preventDefault();
