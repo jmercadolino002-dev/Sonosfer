@@ -1,27 +1,17 @@
-// js/api.js
 const API = "https://sonosfer-backend.onrender.com";
 const CDN = "https://pub-ca150376c7284c64adcb619132b3bf1a.r2.dev";
+
+// Ping para despertar Render
+fetch(`${API}/`).catch(() => {});
 
 async function getSongs(limit = 20, offset = 0) {
   const res = await fetch(`${API}/songs?limit=${limit}&offset=${offset}`);
   return res.json();
 }
 
-async function getArtist(artistId) {
-  const res = await fetch(`${API}/artists`);
-  const artists = await res.json();
-  return artists.find(a => a.id === artistId);
-}
-
 async function getSong(id) {
   const res = await fetch(`${API}/songs/${id}`);
   return res.json();
-}
-
-async function getAlbum(albumId) {
-  const res = await fetch(`${API}/albums`);
-  const albums = await res.json();
-  return albums.find(a => a.id === albumId);
 }
 
 async function getRecommendations(songId) {
@@ -34,9 +24,22 @@ async function getArtists() {
   return res.json();
 }
 
-async function getArtistImage(artistId) {
-  const res = await fetch(`${API}/artists/${artistId}/image`);
+async function getArtist(id) {
+  const res = await fetch(`${API}/artists/${id}`);
   return res.json();
+}
+
+// ← Llama directo a Deezer desde el frontend
+async function getArtistImage(artistName) {
+  try {
+    const res = await fetch(
+      `https://api.deezer.com/search/artist?q=${encodeURIComponent(artistName)}&limit=1`
+    );
+    const data = await res.json();
+    return data.data?.[0]?.picture_medium || null;
+  } catch {
+    return null;
+  }
 }
 
 async function getArtistSongs(artistId) {
@@ -46,11 +49,6 @@ async function getArtistSongs(artistId) {
 
 async function getAlbums() {
   const res = await fetch(`${API}/albums`);
-  return res.json();
-}
-
-async function getArtist(id) {
-  const res = await fetch(`${API}/artists/${id}`);
   return res.json();
 }
 
@@ -64,9 +62,17 @@ async function getAlbumSongs(albumId) {
   return res.json();
 }
 
-async function getAlbumCover(albumId) {
-  const res = await fetch(`${API}/albums/${albumId}/cover`);
-  return res.json();
+// ← Llama directo a Deezer desde el frontend
+async function getAlbumCover(artistName, albumTitle) {
+  try {
+    const res = await fetch(
+      `https://api.deezer.com/search/album?q=${encodeURIComponent(artistName + ' ' + albumTitle)}&limit=1`
+    );
+    const data = await res.json();
+    return data.data?.[0]?.cover_medium || null;
+  } catch {
+    return null;
+  }
 }
 
 async function getGenres() {
