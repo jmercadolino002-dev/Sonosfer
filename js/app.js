@@ -16,7 +16,7 @@ async function renderHome() {
     <div class="main-hero-bg"></div>
     <div class="topbar" id="topbar">
       <div class="nav-arrows">
-        <button class="nav-arrow">&#8249;</button>
+        <button class="nav-arrow" onclick="navigate('home')">&#8249;</button>
         <button class="nav-arrow">&#8250;</button>
       </div>
       <div class="topbar-right">
@@ -48,6 +48,16 @@ async function renderHome() {
       </div>
       <div class="song-list" id="song-list"></div>
     </div>
+    <div class="section" id="rec-section" style="display:none">
+      <div class="section-head">
+        <span class="section-title">Recomendaciones para ti</span>
+      </div>
+      <div class="songs-header">
+        <span>#</span><span>Título</span><span>Álbum</span>
+        <span class="dur-head">⏱</span>
+      </div>
+      <div class="song-list" id="rec-list"></div>
+    </div>
     <div class="section-bottom"></div>
   `;
 
@@ -58,6 +68,7 @@ async function renderHome() {
   loadArtists();
   loadSongs();
   loadQuickGrid();
+  loadRecommendations();
 }
 
 async function loadQuickGrid() {
@@ -140,15 +151,73 @@ async function loadSongs() {
   });
 }
 
-// ── ARTIST PAGE ──
+async function loadRecommendations() {
+  if (!currentSong) {
+    const section = document.getElementById('rec-section');
+    if (section) section.style.display = 'none';
+    return;
+  }
+  try {
+    const recs = await getRecommendations(currentSong.id);
+    if (!recs.length) {
+      const section = document.getElementById('rec-section');
+      if (section) section.style.display = 'none';
+      return;
+    }
+
+    const section = document.getElementById('rec-section');
+    const list = document.getElementById('rec-list');
+    if (!section || !list) return;
+
+    const albumIds = [...new Set(recs.map(s => s.album_id))];
+    const covers = {};
+    await Promise.all(albumIds.map(async id => {
+      const data = await getAlbumCover(id);
+      covers[id] = data.cover_url || null;
+    }));
+
+    section.style.display = 'block';
+    list.innerHTML = '';
+    recs.forEach((s, i) => {
+      const cover = covers[s.album_id];
+      const row = document.createElement('div');
+      row.className = 'song-row';
+      row.innerHTML = `
+        <div><span class="s-num">${i + 1}</span><span class="s-play">▶</span></div>
+        <div class="s-info">
+          <div class="s-thumb">
+            ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
+          </div>
+          <div>
+            <div class="s-name">${s.title}</div>
+            <div class="s-artist">${s.artist}</div>
+          </div>
+        </div>
+        <div class="s-album">${s.album}</div>
+        <div class="s-dur">${formatDuration(s.duration)}</div>
+      `;
+      row.onclick = () => setQueue(recs, i);
+      list.appendChild(row);
+    });
+  } catch {
+    const section = document.getElementById('rec-section');
+    if (section) section.style.display = 'none';
+  }
+}
+
+// ── ARTIST PAGE (FIXED) ──
 async function renderArtist(artistId) {
   const main = document.getElementById('main-content');
-  main.innerHTML = `<div style="color:var(--text2);font-size:14px">${album?.artist || ''} • ${songs.length} canciones</div>`;
 
-  const [songs, imgData, artist] = await Promise.all([
+  // FIX: Don't use album/songs before they are defined!
+  // Just show a loading placeholder initially
+  main.innerHTML = `<div style="padding:40px 24px;color:var(--text2);font-size:14px">Cargando...</div>`;
+
+  const [songs, imgData, artist, allAlbums] = await Promise.all([
     getArtistSongs(artistId),
     getArtistImage(artistId),
-    getArtist(artistId)
+    getArtist(artistId),
+    getAlbums()
   ]);
 
   if (!songs.length) {
@@ -159,11 +228,23 @@ async function renderArtist(artistId) {
   const artistName = artist?.name || songs[0]?.artist || 'Artista';
   const img = imgData.image_url || '';
 
+  // Get artist's albums
+  const artistAlbums = allAlbums.filter(a =>
+    a.artist === artistName || a.artist === songs[0]?.artist || songs.some(s => s.album_id === a.id)
+  );
+
   const albumIds = [...new Set(songs.map(s => s.album_id))];
   const covers = {};
   await Promise.all(albumIds.map(async id => {
     const data = await getAlbumCover(id);
     covers[id] = data.cover_url || null;
+  }));
+
+  // Load album card covers
+  const albumCardCovers = {};
+  await Promise.all(artistAlbums.map(async a => {
+    const data = await getAlbumCover(a.id);
+    albumCardCovers[a.id] = data.cover_url || null;
   }));
 
   main.innerHTML = `
@@ -194,6 +275,12 @@ async function renderArtist(artistId) {
       </div>
       <div class="song-list" id="artist-songs"></div>
     </div>
+    <div style="padding:24px 24px 0" id="artist-albums-section" ${artistAlbums.length ? '' : 'style="display:none"'}>
+      <div class="section-head">
+        <span class="section-title">Álbumes</span>
+      </div>
+      <div class="cards-row" id="artist-albums-row"></div>
+    </div>
     <div class="section-bottom"></div>
   `;
 
@@ -211,7 +298,7 @@ async function renderArtist(artistId) {
         </div>
         <div>
           <div class="s-name">${s.title}</div>
-          <div class="s-artist">${s.album}</div>
+          <div class="s-artist">${s.artist}</div>
         </div>
       </div>
       <div class="s-album">${s.album}</div>
@@ -220,6 +307,26 @@ async function renderArtist(artistId) {
     row.onclick = () => setQueue(songs, i);
     list.appendChild(row);
   });
+
+  // Render artist albums section
+  const albumsRow = document.getElementById('artist-albums-row');
+  if (albumsRow && artistAlbums.length) {
+    artistAlbums.forEach(album => {
+      const cover = albumCardCovers[album.id];
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-img">
+          ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : '💿'}
+        </div>
+        <div class="card-play"><svg width="20" height="20" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div class="card-title">${album.title}</div>
+        <div class="card-sub">${album.artist}</div>
+      `;
+      card.onclick = () => navigate('album', album.id);
+      albumsRow.appendChild(card);
+    });
+  }
 }
 
 // ── ALBUM PAGE ──
@@ -227,7 +334,6 @@ async function renderAlbum(albumId) {
   const main = document.getElementById('main-content');
   main.innerHTML = `<div style="padding:40px 24px;color:var(--text2)">Cargando álbum...</div>`;
 
-  
   const [songs, coverData, album] = await Promise.all([
     getAlbumSongs(albumId),
     getAlbumCover(albumId),
@@ -240,6 +346,7 @@ async function renderAlbum(albumId) {
   }
 
   const cover = coverData.cover_url || '';
+  const albumTitle = album?.title || songs[0]?.album || 'Álbum';
 
   main.innerHTML = `
     <div class="main-hero-bg" style="background:linear-gradient(180deg,#2a1a3a 0%,transparent 100%)"></div>
@@ -255,7 +362,7 @@ async function renderAlbum(albumId) {
       </div>
       <div>
         <div style="font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Álbum</div>
-        <h1 style="...">${album?.title || songs[0]?.album || 'Álbum'}</h1>
+        <h1 style="font-size:48px;font-weight:800;letter-spacing:-1px;margin-bottom:16px">${albumTitle}</h1>
         <div style="color:var(--text2);font-size:14px">${songs.length} canciones</div>
       </div>
     </div>
