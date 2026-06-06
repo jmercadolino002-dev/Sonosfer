@@ -95,8 +95,7 @@ async function loadArtists() {
   row.innerHTML = '';
   const shown = artists.slice(0, 5);
   for (const artist of shown) {
-    const imgData = await getArtistImage(artist.id);
-    const img = imgData.image_url || '';
+    const img = await getArtistImage(artist.name) || '';
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
@@ -117,11 +116,12 @@ async function loadSongs() {
   const list = document.getElementById('song-list');
   if (!list) return;
 
-  const albumIds = [...new Set(songs.map(s => s.album_id))];
   const covers = {};
-  await Promise.all(albumIds.map(async id => {
-    const data = await getAlbumCover(id);
-    covers[id] = data.cover_url || null;
+  const albumMap = {};
+  songs.forEach(s => { albumMap[s.album_id] = { title: s.album, artist: s.artist }; });
+
+  await Promise.all(Object.entries(albumMap).map(async ([id, info]) => {
+    covers[id] = await getAlbumCover(info.artist, info.title);
   }));
 
   list.innerHTML = '';
@@ -166,11 +166,11 @@ async function loadRecommendations() {
     const row = document.getElementById('rec-row');
     if (!section || !row) return;
 
-    const albumIds = [...new Set(recs.map(s => s.album_id))];
     const covers = {};
-    await Promise.all(albumIds.map(async id => {
-      const data = await getAlbumCover(id);
-      covers[id] = data.cover_url || null;
+    const albumMap = {};
+    recs.forEach(s => { albumMap[s.album_id] = { title: s.album, artist: s.artist }; });
+    await Promise.all(Object.entries(albumMap).map(async ([id, info]) => {
+      covers[id] = await getAlbumCover(info.artist, info.title);
     }));
 
     section.style.display = 'block';
@@ -203,9 +203,8 @@ async function renderArtist(artistId) {
   const main = document.getElementById('main-content');
   main.innerHTML = `<div style="padding:40px 24px;color:var(--text2);font-size:14px">Cargando...</div>`;
 
-  const [songs, imgData, artist, allAlbums] = await Promise.all([
+  const [songs, artist, allAlbums] = await Promise.all([
     getArtistSongs(artistId),
-    getArtistImage(artistId),
     getArtist(artistId),
     getAlbums()
   ]);
@@ -216,23 +215,22 @@ async function renderArtist(artistId) {
   }
 
   const artistName = artist?.name || songs[0]?.artist || 'Artista';
-  const img = imgData.image_url || '';
+  const img = await getArtistImage(artistName) || '';
 
   const artistAlbums = allAlbums.filter(a =>
     a.artist === artistName || songs.some(s => s.album_id === a.id)
   );
 
-  const albumIds = [...new Set(songs.map(s => s.album_id))];
   const covers = {};
-  await Promise.all(albumIds.map(async id => {
-    const data = await getAlbumCover(id);
-    covers[id] = data.cover_url || null;
+  const albumMap = {};
+  songs.forEach(s => { albumMap[s.album_id] = { title: s.album, artist: s.artist }; });
+  await Promise.all(Object.entries(albumMap).map(async ([id, info]) => {
+    covers[id] = await getAlbumCover(info.artist, info.title);
   }));
 
   const albumCardCovers = {};
   await Promise.all(artistAlbums.map(async a => {
-    const data = await getAlbumCover(a.id);
-    albumCardCovers[a.id] = data.cover_url || null;
+    albumCardCovers[a.id] = await getAlbumCover(a.artist, a.title);
   }));
 
   main.innerHTML = `
@@ -321,9 +319,8 @@ async function renderAlbum(albumId) {
   const main = document.getElementById('main-content');
   main.innerHTML = `<div style="padding:40px 24px;color:var(--text2)">Cargando álbum...</div>`;
 
-  const [songs, coverData, album] = await Promise.all([
+  const [songs, album] = await Promise.all([
     getAlbumSongs(albumId),
-    getAlbumCover(albumId),
     getAlbum(albumId)
   ]);
 
@@ -332,8 +329,9 @@ async function renderAlbum(albumId) {
     return;
   }
 
-  const cover = coverData.cover_url || '';
   const albumTitle = album?.title || 'Álbum';
+  const artistName = album?.artist || '';
+  const cover = await getAlbumCover(artistName, albumTitle) || '';
 
   main.innerHTML = `
     <div class="main-hero-bg" style="background:linear-gradient(180deg,#2a1a3a 0%,transparent 100%)"></div>
@@ -350,7 +348,7 @@ async function renderAlbum(albumId) {
       <div>
         <div style="font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Álbum</div>
         <h1 style="font-size:48px;font-weight:800;letter-spacing:-1px;margin-bottom:16px">${albumTitle}</h1>
-        <div style="color:var(--text2);font-size:14px">${songs.length} canciones</div>
+        <div style="color:var(--text2);font-size:14px">${artistName} · ${songs.length} canciones</div>
       </div>
     </div>
     <div style="padding:0 24px">
