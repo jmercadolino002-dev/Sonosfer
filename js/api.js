@@ -49,6 +49,16 @@ async function getAlbums() {
   return res.json();
 }
 
+async function getArtist(id) {
+  const res = await fetch(`${API}/artists/${id}`);
+  return res.json();
+}
+
+async function getAlbum(id) {
+  const res = await fetch(`${API}/albums/${id}`);
+  return res.json();
+}
+
 async function getAlbumSongs(albumId) {
   const res = await fetch(`${API}/albums/${albumId}/songs`);
   return res.json();
