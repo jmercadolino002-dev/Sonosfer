@@ -18,6 +18,12 @@ async function getSong(id) {
   return res.json();
 }
 
+async function getAlbum(albumId) {
+  const res = await fetch(`${API}/albums`);
+  const albums = await res.json();
+  return albums.find(a => a.id === albumId);
+}
+
 async function getRecommendations(songId) {
   const res = await fetch(`${API}/songs/${songId}/recommendations`);
   return res.json();
