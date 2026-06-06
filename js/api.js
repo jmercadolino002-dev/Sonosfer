@@ -7,6 +7,12 @@ async function getSongs(limit = 20, offset = 0) {
   return res.json();
 }
 
+async function getArtist(artistId) {
+  const res = await fetch(`${API}/artists`);
+  const artists = await res.json();
+  return artists.find(a => a.id === artistId);
+}
+
 async function getSong(id) {
   const res = await fetch(`${API}/songs/${id}`);
   return res.json();
