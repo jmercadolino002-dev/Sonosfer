@@ -108,14 +108,25 @@ async function loadSongs() {
   const songs = await getSongs(20);
   const list = document.getElementById('song-list');
   if (!list) return;
+
+  const albumIds = [...new Set(songs.map(s => s.album_id))];
+  const covers = {};
+  await Promise.all(albumIds.map(async id => {
+    const data = await getAlbumCover(id);
+    covers[id] = data.cover_url || null;
+  }));
+
   list.innerHTML = '';
   songs.forEach((s, i) => {
+    const cover = covers[s.album_id];
     const row = document.createElement('div');
     row.className = 'song-row';
     row.innerHTML = `
       <div><span class="s-num">${i + 1}</span><span class="s-play">▶</span></div>
       <div class="s-info">
-        <div class="s-thumb">🎵</div>
+        <div class="s-thumb">
+          ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
+        </div>
         <div>
           <div class="s-name">${s.title}</div>
           <div class="s-artist">${s.artist}</div>
@@ -131,15 +142,13 @@ async function loadSongs() {
 
 // ── ARTIST PAGE ──
 async function renderArtist(artistId) {
-  const [songs, imgData, artist] = await Promise.all([
-  getArtistSongs(artistId),
-  getArtistImage(artistId),
-  getArtist(artistId)
-]);
+  const main = document.getElementById('main-content');
+  main.innerHTML = `<div style="padding:40px 24px;color:var(--text2)">Cargando artista...</div>`;
 
-const artistName = artist?.name || songs[0]?.artist || 'Artista';
+  const [songs, imgData, artist] = await Promise.all([
     getArtistSongs(artistId),
-    getArtistImage(artistId)
+    getArtistImage(artistId),
+    getArtist(artistId)
   ]);
 
   if (!songs.length) {
@@ -147,8 +156,15 @@ const artistName = artist?.name || songs[0]?.artist || 'Artista';
     return;
   }
 
-  const artistName = songs[0].artist || 'Artista';
+  const artistName = artist?.name || songs[0]?.artist || 'Artista';
   const img = imgData.image_url || '';
+
+  const albumIds = [...new Set(songs.map(s => s.album_id))];
+  const covers = {};
+  await Promise.all(albumIds.map(async id => {
+    const data = await getAlbumCover(id);
+    covers[id] = data.cover_url || null;
+  }));
 
   main.innerHTML = `
     <div class="main-hero-bg" style="background:linear-gradient(180deg,#1a2a3a 0%,transparent 100%)"></div>
@@ -184,12 +200,15 @@ const artistName = artist?.name || songs[0]?.artist || 'Artista';
   window._artistSongs = songs;
   const list = document.getElementById('artist-songs');
   songs.forEach((s, i) => {
+    const cover = covers[s.album_id];
     const row = document.createElement('div');
     row.className = 'song-row';
     row.innerHTML = `
       <div><span class="s-num">${i + 1}</span><span class="s-play">▶</span></div>
       <div class="s-info">
-        <div class="s-thumb">🎵</div>
+        <div class="s-thumb">
+          ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
+        </div>
         <div>
           <div class="s-name">${s.title}</div>
           <div class="s-artist">${s.album}</div>
@@ -224,7 +243,7 @@ async function renderAlbum(albumId) {
     <div class="main-hero-bg" style="background:linear-gradient(180deg,#2a1a3a 0%,transparent 100%)"></div>
     <div class="topbar" id="topbar">
       <div class="nav-arrows">
-        <button class="nav-arrow" onclick="history.back()">&#8249;</button>
+        <button class="nav-arrow" onclick="navigate('home')">&#8249;</button>
         <button class="nav-arrow">&#8250;</button>
       </div>
     </div>
@@ -258,7 +277,9 @@ async function renderAlbum(albumId) {
     row.innerHTML = `
       <div><span class="s-num">${i + 1}</span><span class="s-play">▶</span></div>
       <div class="s-info">
-        <div class="s-thumb">🎵</div>
+        <div class="s-thumb">
+          ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
+        </div>
         <div>
           <div class="s-name">${s.title}</div>
         </div>
@@ -332,7 +353,7 @@ async function doSearch(q) {
   });
 }
 
-// ── SIDEBAR LIBRARY ──
+// ── SIDEBAR ──
 async function loadSidebarArtists() {
   const artists = await getArtists();
   const list = document.getElementById('sidebar-list');
@@ -346,17 +367,6 @@ async function loadSidebarArtists() {
     </div>
   `).join('');
 }
-
-// Filtros sidebar
-document.querySelectorAll('.lib-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('.lib-chip').forEach(c => c.classList.remove('active'));
-    chip.classList.add('active');
-    if (chip.dataset.filter === 'artistas') loadSidebarArtists();
-    else if (chip.dataset.filter === 'albums') loadSidebarAlbums();
-    else loadSidebarPlaylists();
-  });
-});
 
 async function loadSidebarAlbums() {
   const albums = await getAlbums();
@@ -381,6 +391,16 @@ function loadSidebarPlaylists() {
     </div>
   `;
 }
+
+document.querySelectorAll('.lib-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.lib-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    if (chip.dataset.filter === 'artistas') loadSidebarArtists();
+    else if (chip.dataset.filter === 'albums') loadSidebarAlbums();
+    else loadSidebarPlaylists();
+  });
+});
 
 // Init
 navigate('home');
