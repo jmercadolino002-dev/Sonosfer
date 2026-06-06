@@ -2,15 +2,20 @@ const audio = new Audio();
 let currentSong = null;
 let playing = false;
 
-function playSong(song) {
+function playSong(song ) {
   currentSong = song;
-  audio.src = song.cloudflare_url;
+  
+  // CORRECCIÓN: Codificar la URL para manejar espacios y caracteres especiales
+  const safeUrl = song.cloudflare_url.split('/').map(segment => encodeURIComponent(segment)).join('/');
+  // Re-corregimos el protocolo (https: ) que encodeURIComponent también afecta
+  audio.src = safeUrl.replace('https%3A', 'https:' );
+  
   audio.play();
   playing = true;
 
   document.getElementById('track-name').textContent = song.title;
   document.getElementById('track-artist').textContent = song.artist;
-
+  
   const icon = document.getElementById('play-icon');
   icon.innerHTML = '&lt;path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/&gt;';
 
