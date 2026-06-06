@@ -143,7 +143,7 @@ async function loadSongs() {
 // ── ARTIST PAGE ──
 async function renderArtist(artistId) {
   const main = document.getElementById('main-content');
-  main.innerHTML = `<div style="padding:40px 24px;color:var(--text2)">Cargando artista...</div>`;
+  main.innerHTML = `<div style="color:var(--text2);font-size:14px">${album?.artist || ''} • ${songs.length} canciones</div>`;
 
   const [songs, imgData, artist] = await Promise.all([
     getArtistSongs(artistId),
@@ -255,7 +255,7 @@ async function renderAlbum(albumId) {
       </div>
       <div>
         <div style="font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Álbum</div>
-        <h1 style="font-size:36px;font-weight:800;letter-spacing:-0.5px;margin-bottom:8px">${songs[0]?.album || 'Álbum'}</h1>
+        <h1 style="...">${album?.title || songs[0]?.album || 'Álbum'}</h1>
         <div style="color:var(--text2);font-size:14px">${songs.length} canciones</div>
       </div>
     </div>
