@@ -131,12 +131,13 @@ async function loadSongs() {
 
 // ── ARTIST PAGE ──
 async function renderArtist(artistId) {
-  const [songs, imgData] = await Promise.all([
+  const [songs, imgData, artist] = await Promise.all([
   getArtistSongs(artistId),
-  getArtistImage(artistId)
+  getArtistImage(artistId),
+  getArtist(artistId)
 ]);
 
-const artistName = songs[0].artist || 'Artista';
+const artistName = artist?.name || songs[0]?.artist || 'Artista';
     getArtistSongs(artistId),
     getArtistImage(artistId)
   ]);
