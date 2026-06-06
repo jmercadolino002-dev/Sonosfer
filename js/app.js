@@ -1,12 +1,12 @@
 // Greeting
 function setGreeting() {
   const h = new Date().getHours();
-  return h < 12 ? 'Buenos días' : h < 18 ? 'Buenas tardes' : 'Buenas noches';
+  return h &lt; 12 ? 'Buenos días' : h &lt; 18 ? 'Buenas tardes' : 'Buenas noches';
 }
 
 // Topbar scroll
 document.getElementById('main-scroll').addEventListener('scroll', function () {
-  document.getElementById('topbar')?.classList.toggle('scrolled', this.scrollTop > 60);
+  document.getElementById('topbar')?.classList.toggle('scrolled', this.scrollTop &gt; 60);
 });
 
 // ── HOME ──
@@ -16,12 +16,12 @@ async function renderHome() {
     <div class="main-hero-bg"></div>
     <div class="topbar" id="topbar">
       <div class="nav-arrows">
-        <button class="nav-arrow" onclick="navigate('home')">&#8249;</button>
-        <button class="nav-arrow">&#8250;</button>
+        &lt;button class="nav-arrow" onclick="navigate('home')"&gt;&#8249;&lt;/button&gt;
+        &lt;button class="nav-arrow"&gt;&#8250;&lt;/button&gt;
       </div>
       <div class="topbar-right">
-        <button class="btn-signup">Registrarse</button>
-        <button class="btn-login">Iniciar sesión</button>
+        &lt;button class="btn-signup"&gt;Registrarse&lt;/button&gt;
+        &lt;button class="btn-login"&gt;Iniciar sesión&lt;/button&gt;
       </div>
     </div>
     <div class="greeting-section">
@@ -33,7 +33,7 @@ async function renderHome() {
     <div class="section">
       <div class="section-head">
         <span class="section-title">Artistas</span>
-        <span class="section-more" onclick="navigate('search')">Ver todo</span>
+        <span class="section-more">Ver todo</span>
       </div>
       <div class="cards-row" id="artists-row"></div>
     </div>
@@ -50,19 +50,15 @@ async function renderHome() {
     </div>
     <div class="section" id="rec-section" style="display:none">
       <div class="section-head">
-        <span class="section-title">Recomendaciones para ti</span>
+        <span class="section-title">Basado en lo que escuchas</span>
       </div>
-      <div class="songs-header">
-        <span>#</span><span>Título</span><span>Álbum</span>
-        <span class="dur-head">⏱</span>
-      </div>
-      <div class="song-list" id="rec-list"></div>
+      <div class="cards-row" id="rec-row"></div>
     </div>
     <div class="section-bottom"></div>
   `;
 
   document.getElementById('main-scroll').addEventListener('scroll', function () {
-    document.getElementById('topbar')?.classList.toggle('scrolled', this.scrollTop > 60);
+    document.getElementById('topbar')?.classList.toggle('scrolled', this.scrollTop &gt; 60);
   });
 
   loadArtists();
@@ -76,18 +72,18 @@ async function loadQuickGrid() {
   const grid = document.getElementById('quick-grid');
   if (!grid) return;
   const gradients = ['g1','g2','g3','g4','g5','g6'];
-  grid.innerHTML = songs.map((s, i) => `
+  grid.innerHTML = songs.map((s, i) =&gt; `
     <div class="quick-card" data-song-index="${i}">
       <div class="quick-thumb ${gradients[i % 6]}"></div>
       <span class="quick-name">${s.title}</span>
       <div class="quick-play">
-        <svg width="18" height="18" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        &lt;svg width="18" height="18" fill="#000" viewBox="0 0 24 24"&gt;&lt;path d="M8 5v14l11-7z"/&gt;&lt;/svg&gt;
       </div>
     </div>
   `).join('');
 
-  grid.querySelectorAll('.quick-card').forEach((card, i) => {
-    card.onclick = () => setQueue(songs, i);
+  grid.querySelectorAll('.quick-card').forEach((card, i) =&gt; {
+    card.onclick = () =&gt; setQueue(songs, i);
   });
 }
 
@@ -104,13 +100,13 @@ async function loadArtists() {
     card.className = 'card';
     card.innerHTML = `
       <div class="card-img artist">
-        ${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : '🎵'}
+        ${img ? `<img src style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : '🎵'}
       </div>
-      <div class="card-play"><svg width="20" height="20" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      <div class="card-play">&lt;svg width="20" height="20" fill="#000" viewBox="0 0 24 24"&gt;&lt;path d="M8 5v14l11-7z"/&gt;&lt;/svg&gt;</div>
       <div class="card-title">${artist.name}</div>
       <div class="card-sub">Artista</div>
     `;
-    card.onclick = () => navigate('artist', artist.id);
+    card.onclick = () =&gt; navigate('artist', artist.id);
     row.appendChild(card);
   }
 }
@@ -120,15 +116,15 @@ async function loadSongs() {
   const list = document.getElementById('song-list');
   if (!list) return;
 
-  const albumIds = [...new Set(songs.map(s => s.album_id))];
+  const albumIds = [...new Set(songs.map(s =&gt; s.album_id))];
   const covers = {};
-  await Promise.all(albumIds.map(async id => {
+  await Promise.all(albumIds.map(async id =&gt; {
     const data = await getAlbumCover(id);
     covers[id] = data.cover_url || null;
   }));
 
   list.innerHTML = '';
-  songs.forEach((s, i) => {
+  songs.forEach((s, i) =&gt; {
     const cover = covers[s.album_id];
     const row = document.createElement('div');
     row.className = 'song-row';
@@ -136,7 +132,7 @@ async function loadSongs() {
       <div><span class="s-num">${i + 1}</span><span class="s-play">▶</span></div>
       <div class="s-info">
         <div class="s-thumb">
-          ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
+          ${cover ? `<img src style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
         </div>
         <div>
           <div class="s-name">${s.title}</div>
@@ -146,7 +142,7 @@ async function loadSongs() {
       <div class="s-album">${s.album}</div>
       <div class="s-dur">${formatDuration(s.duration)}</div>
     `;
-    row.onclick = () => setQueue(songs, i);
+    row.onclick = () =&gt; setQueue(songs, i);
     list.appendChild(row);
   });
 }
@@ -166,38 +162,32 @@ async function loadRecommendations() {
     }
 
     const section = document.getElementById('rec-section');
-    const list = document.getElementById('rec-list');
-    if (!section || !list) return;
+    const row = document.getElementById('rec-row');
+    if (!section || !row) return;
 
-    const albumIds = [...new Set(recs.map(s => s.album_id))];
+    const albumIds = [...new Set(recs.map(s =&gt; s.album_id))];
     const covers = {};
-    await Promise.all(albumIds.map(async id => {
+    await Promise.all(albumIds.map(async id =&gt; {
       const data = await getAlbumCover(id);
       covers[id] = data.cover_url || null;
     }));
 
     section.style.display = 'block';
-    list.innerHTML = '';
-    recs.forEach((s, i) => {
+    row.innerHTML = '';
+    recs.forEach((s, i) =&gt; {
       const cover = covers[s.album_id];
-      const row = document.createElement('div');
-      row.className = 'song-row';
-      row.innerHTML = `
-        <div><span class="s-num">${i + 1}</span><span class="s-play">▶</span></div>
-        <div class="s-info">
-          <div class="s-thumb">
-            ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
-          </div>
-          <div>
-            <div class="s-name">${s.title}</div>
-            <div class="s-artist">${s.artist}</div>
-          </div>
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="card-img">
+          ${cover ? `<img src style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : '🎵'}
         </div>
-        <div class="s-album">${s.album}</div>
-        <div class="s-dur">${formatDuration(s.duration)}</div>
+        <div class="card-play">&lt;svg width="20" height="20" fill="#000" viewBox="0 0 24 24"&gt;&lt;path d="M8 5v14l11-7z"/&gt;&lt;/svg&gt;</div>
+        <div class="card-title">${s.title}</div>
+        <div class="card-sub">${s.artist}</div>
       `;
-      row.onclick = () => setQueue(recs, i);
-      list.appendChild(row);
+      card.onclick = () =&gt; setQueue(recs, i);
+      row.appendChild(card);
     });
   } catch {
     const section = document.getElementById('rec-section');
@@ -205,12 +195,14 @@ async function loadRecommendations() {
   }
 }
 
+// Called by player.js whenever a new song starts playing
+window.onSongPlay = loadRecommendations;
+
 // ── ARTIST PAGE (FIXED) ──
 async function renderArtist(artistId) {
   const main = document.getElementById('main-content');
 
   // FIX: Don't use album/songs before they are defined!
-  // Just show a loading placeholder initially
   main.innerHTML = `<div style="padding:40px 24px;color:var(--text2);font-size:14px">Cargando...</div>`;
 
   const [songs, imgData, artist, allAlbums] = await Promise.all([
@@ -228,21 +220,19 @@ async function renderArtist(artistId) {
   const artistName = artist?.name || songs[0]?.artist || 'Artista';
   const img = imgData.image_url || '';
 
-  // Get artist's albums
-  const artistAlbums = allAlbums.filter(a =>
-    a.artist === artistName || a.artist === songs[0]?.artist || songs.some(s => s.album_id === a.id)
+  const artistAlbums = allAlbums.filter(a =&gt;
+    a.artist === artistName || a.artist === songs[0]?.artist || songs.some(s =&gt; s.album_id === a.id)
   );
 
-  const albumIds = [...new Set(songs.map(s => s.album_id))];
+  const albumIds = [...new Set(songs.map(s =&gt; s.album_id))];
   const covers = {};
-  await Promise.all(albumIds.map(async id => {
+  await Promise.all(albumIds.map(async id =&gt; {
     const data = await getAlbumCover(id);
     covers[id] = data.cover_url || null;
   }));
 
-  // Load album card covers
   const albumCardCovers = {};
-  await Promise.all(artistAlbums.map(async a => {
+  await Promise.all(artistAlbums.map(async a =&gt; {
     const data = await getAlbumCover(a.id);
     albumCardCovers[a.id] = data.cover_url || null;
   }));
@@ -251,13 +241,13 @@ async function renderArtist(artistId) {
     <div class="main-hero-bg" style="background:linear-gradient(180deg,#1a2a3a 0%,transparent 100%)"></div>
     <div class="topbar" id="topbar">
       <div class="nav-arrows">
-        <button class="nav-arrow" onclick="navigate('home')">&#8249;</button>
-        <button class="nav-arrow">&#8250;</button>
+        &lt;button class="nav-arrow" onclick="navigate('home')"&gt;&#8249;&lt;/button&gt;
+        &lt;button class="nav-arrow"&gt;&#8250;&lt;/button&gt;
       </div>
     </div>
     <div style="padding:0 24px 32px;display:flex;align-items:flex-end;gap:24px;min-height:220px">
       <div style="width:180px;height:180px;border-radius:50%;background:var(--bg4);overflow:hidden;flex-shrink:0;box-shadow:0 16px 48px rgba(0,0,0,0.6)">
-        ${img ? `<img src="${img}" style="width:100%;height:100%;object-fit:cover">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px">🎵</div>'}
+        ${img ? `<img src style="width:100%;height:100%;object-fit:cover">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px">🎵</div>'}
       </div>
       <div>
         <div style="font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Artista</div>
@@ -266,16 +256,16 @@ async function renderArtist(artistId) {
       </div>
     </div>
     <div style="padding:0 24px">
-      <button onclick="setQueue(window._artistSongs, 0)" style="background:var(--accent);border:none;border-radius:50%;width:56px;height:56px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,0.4)">
-        <svg width="24" height="24" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-      </button>
+      &lt;button onclick="setQueue(window._artistSongs, 0)" style="background:var(--accent);border:none;border-radius:50%;width:56px;height:56px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,0.4)"&gt;
+        &lt;svg width="24" height="24" fill="#000" viewBox="0 0 24 24"&gt;&lt;path d="M8 5v14l11-7z"/&gt;&lt;/svg&gt;
+      &lt;/button&gt;
       <div class="songs-header">
         <span>#</span><span>Título</span><span>Álbum</span>
         <span class="dur-head">⏱</span>
       </div>
       <div class="song-list" id="artist-songs"></div>
     </div>
-    <div style="padding:24px 24px 0" id="artist-albums-section" ${artistAlbums.length ? '' : 'style="display:none"'}>
+    <div style="padding:24px 24px 0" id="artist-albums-section" style="display:none">
       <div class="section-head">
         <span class="section-title">Álbumes</span>
       </div>
@@ -286,7 +276,7 @@ async function renderArtist(artistId) {
 
   window._artistSongs = songs;
   const list = document.getElementById('artist-songs');
-  songs.forEach((s, i) => {
+  songs.forEach((s, i) =&gt; {
     const cover = covers[s.album_id];
     const row = document.createElement('div');
     row.className = 'song-row';
@@ -294,7 +284,7 @@ async function renderArtist(artistId) {
       <div><span class="s-num">${i + 1}</span><span class="s-play">▶</span></div>
       <div class="s-info">
         <div class="s-thumb">
-          ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
+          ${cover ? `<img src style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
         </div>
         <div>
           <div class="s-name">${s.title}</div>
@@ -304,26 +294,26 @@ async function renderArtist(artistId) {
       <div class="s-album">${s.album}</div>
       <div class="s-dur">${formatDuration(s.duration)}</div>
     `;
-    row.onclick = () => setQueue(songs, i);
+    row.onclick = () =&gt; setQueue(songs, i);
     list.appendChild(row);
   });
 
   // Render artist albums section
   const albumsRow = document.getElementById('artist-albums-row');
   if (albumsRow && artistAlbums.length) {
-    artistAlbums.forEach(album => {
+    artistAlbums.forEach(album =&gt; {
       const cover = albumCardCovers[album.id];
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
         <div class="card-img">
-          ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : '💿'}
+          ${cover ? `<img src style="width:100%;height:100%;object-fit:cover;border-radius:6px">` : '💿'}
         </div>
-        <div class="card-play"><svg width="20" height="20" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div class="card-play">&lt;svg width="20" height="20" fill="#000" viewBox="0 0 24 24"&gt;&lt;path d="M8 5v14l11-7z"/&gt;&lt;/svg&gt;</div>
         <div class="card-title">${album.title}</div>
         <div class="card-sub">${album.artist}</div>
       `;
-      card.onclick = () => navigate('album', album.id);
+      card.onclick = () =&gt; navigate('album', album.id);
       albumsRow.appendChild(card);
     });
   }
@@ -352,13 +342,13 @@ async function renderAlbum(albumId) {
     <div class="main-hero-bg" style="background:linear-gradient(180deg,#2a1a3a 0%,transparent 100%)"></div>
     <div class="topbar" id="topbar">
       <div class="nav-arrows">
-        <button class="nav-arrow" onclick="navigate('home')">&#8249;</button>
-        <button class="nav-arrow">&#8250;</button>
+        &lt;button class="nav-arrow" onclick="navigate('home')"&gt;&#8249;&lt;/button&gt;
+        &lt;button class="nav-arrow"&gt;&#8250;&lt;/button&gt;
       </div>
     </div>
     <div style="padding:0 24px 32px;display:flex;align-items:flex-end;gap:24px;min-height:220px">
       <div style="width:180px;height:180px;border-radius:8px;background:var(--bg4);overflow:hidden;flex-shrink:0;box-shadow:0 16px 48px rgba(0,0,0,0.6)">
-        ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px">💿</div>'}
+        ${cover ? `<img src style="width:100%;height:100%;object-fit:cover">` : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px">💿</div>'}
       </div>
       <div>
         <div style="font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Álbum</div>
@@ -367,9 +357,9 @@ async function renderAlbum(albumId) {
       </div>
     </div>
     <div style="padding:0 24px">
-      <button onclick="setQueue(window._albumSongs, 0)" style="background:var(--accent);border:none;border-radius:50%;width:56px;height:56px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,0.4)">
-        <svg width="24" height="24" fill="#000" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-      </button>
+      &lt;button onclick="setQueue(window._albumSongs, 0)" style="background:var(--accent);border:none;border-radius:50%;width:56px;height:56px;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-bottom:24px;box-shadow:0 8px 24px rgba(0,0,0,0.4)"&gt;
+        &lt;svg width="24" height="24" fill="#000" viewBox="0 0 24 24"&gt;&lt;path d="M8 5v14l11-7z"/&gt;&lt;/svg&gt;
+      &lt;/button&gt;
       <div class="songs-header">
         <span>#</span><span>Título</span><span>Duración</span><span></span>
       </div>
@@ -380,14 +370,14 @@ async function renderAlbum(albumId) {
 
   window._albumSongs = songs;
   const list = document.getElementById('album-songs');
-  songs.forEach((s, i) => {
+  songs.forEach((s, i) =&gt; {
     const row = document.createElement('div');
     row.className = 'song-row';
     row.innerHTML = `
       <div><span class="s-num">${i + 1}</span><span class="s-play">▶</span></div>
       <div class="s-info">
         <div class="s-thumb">
-          ${cover ? `<img src="${cover}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
+          ${cover ? `<img src style="width:100%;height:100%;object-fit:cover;border-radius:4px">` : '🎵'}
         </div>
         <div>
           <div class="s-name">${s.title}</div>
@@ -396,7 +386,7 @@ async function renderAlbum(albumId) {
       <div class="s-album"></div>
       <div class="s-dur">${formatDuration(s.duration)}</div>
     `;
-    row.onclick = () => setQueue(songs, i);
+    row.onclick = () =&gt; setQueue(songs, i);
     list.appendChild(row);
   });
 }
@@ -407,16 +397,16 @@ async function renderSearch() {
   main.innerHTML = `
     <div class="topbar" id="topbar">
       <div class="nav-arrows">
-        <button class="nav-arrow" onclick="navigate('home')">&#8249;</button>
-        <button class="nav-arrow">&#8250;</button>
+        &lt;button class="nav-arrow" onclick="navigate('home')"&gt;&#8249;&lt;/button&gt;
+        &lt;button class="nav-arrow"&gt;&#8250;&lt;/button&gt;
       </div>
     </div>
     <div style="padding:0 24px">
       <h1 style="font-size:28px;font-weight:800;margin-bottom:20px">Buscar</h1>
       <div style="position:relative;margin-bottom:24px">
-        <svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--bg)" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input id="search-input" type="text" placeholder="¿Qué quieres escuchar?"
-          style="width:100%;padding:14px 14px 14px 44px;border-radius:8px;border:none;background:var(--text);color:var(--bg);font-family:inherit;font-size:15px;outline:none">
+        &lt;svg style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--bg)" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"&gt;&lt;circle cx="11" cy="11" r="8"/&gt;&lt;path d="m21 21-4.35-4.35"/&gt;&lt;/svg&gt;
+        &lt;input id="search-input" type="text" placeholder="¿Qué quieres escuchar?"
+          style="width:100%;padding:14px 14px 14px 44px;border-radius:8px;border:none;background:var(--text);color:var(--bg);font-family:inherit;font-size:15px;outline:none"&gt;
       </div>
       <div class="song-list" id="search-results"></div>
     </div>
@@ -426,9 +416,9 @@ async function renderSearch() {
   const input = document.getElementById('search-input');
   input.focus();
   let debounce;
-  input.addEventListener('input', () => {
+  input.addEventListener('input', () =&gt; {
     clearTimeout(debounce);
-    debounce = setTimeout(() => doSearch(input.value.trim()), 350);
+    debounce = setTimeout(() =&gt; doSearch(input.value.trim()), 350);
   });
 }
 
@@ -442,7 +432,7 @@ async function doSearch(q) {
     return;
   }
   list.innerHTML = '';
-  results.forEach((s, i) => {
+  results.forEach((s, i) =&gt; {
     const row = document.createElement('div');
     row.className = 'song-row';
     row.innerHTML = `
@@ -457,7 +447,7 @@ async function doSearch(q) {
       <div class="s-album">${s.album}</div>
       <div class="s-dur">${formatDuration(s.duration)}</div>
     `;
-    row.onclick = () => setQueue(results, i);
+    row.onclick = () =&gt; setQueue(results, i);
     list.appendChild(row);
   });
 }
@@ -466,8 +456,8 @@ async function doSearch(q) {
 async function loadSidebarArtists() {
   const artists = await getArtists();
   const list = document.getElementById('sidebar-list');
-  list.innerHTML = artists.map(a => `
-    <div class="pl-item" onclick="navigate('artist', ${a.id})">
+  list.innerHTML = artists.map(a =&gt; `
+    <div class="pl-item">
       <div class="pl-thumb" style="background:var(--bg4)">🎵</div>
       <div class="pl-info">
         <div class="pl-name">${a.name}</div>
@@ -480,8 +470,8 @@ async function loadSidebarArtists() {
 async function loadSidebarAlbums() {
   const albums = await getAlbums();
   const list = document.getElementById('sidebar-list');
-  list.innerHTML = albums.map(a => `
-    <div class="pl-item" onclick="navigate('album', ${a.id})">
+  list.innerHTML = albums.map(a =&gt; `
+    <div class="pl-item">
       <div class="pl-thumb" style="background:var(--bg4)">💿</div>
       <div class="pl-info">
         <div class="pl-name">${a.title}</div>
@@ -501,9 +491,9 @@ function loadSidebarPlaylists() {
   `;
 }
 
-document.querySelectorAll('.lib-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    document.querySelectorAll('.lib-chip').forEach(c => c.classList.remove('active'));
+document.querySelectorAll('.lib-chip').forEach(chip =&gt; {
+  chip.addEventListener('click', () =&gt; {
+    document.querySelectorAll('.lib-chip').forEach(c =&gt; c.classList.remove('active'));
     chip.classList.add('active');
     if (chip.dataset.filter === 'artistas') loadSidebarArtists();
     else if (chip.dataset.filter === 'albums') loadSidebarAlbums();
