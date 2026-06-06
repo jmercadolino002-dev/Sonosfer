@@ -6,7 +6,7 @@ function setGreeting() {
 
 // Topbar scroll
 document.getElementById('main-scroll').addEventListener('scroll', function () {
-  document.getElementById('topbar')?.classList.toggle('scrolled', this.scrollTop > 60);
+  const tb = document.getElementById('topbar'); if (tb) tb.classList.toggle('scrolled', this.scrollTop > 60);
 });
 
 // ── HOME ──
