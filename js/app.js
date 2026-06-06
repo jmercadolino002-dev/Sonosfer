@@ -144,7 +144,7 @@ async function renderArtist(artistId) {
     return;
   }
 
-  const artistName = songs[0].artist;
+  const artistName = songs[0].artist || 'Artista';
   const img = imgData.image_url || '';
 
   main.innerHTML = `
