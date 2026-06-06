@@ -30,15 +30,13 @@ async function getArtist(id) {
 }
 
 // ← Llama directo a Deezer desde el frontend
-async function getArtistImage(artistName) {
+async function getArtistImage(artistId) {
   try {
-    const res = await fetch(
-      `https://api.deezer.com/search/artist?q=${encodeURIComponent(artistName)}&limit=1`
-    );
-    const data = await res.json();
-    return data.data?.[0]?.picture_medium || null;
+    const res = await fetch(`${API}/artists/${artistId}/image`);
+    if (!res.ok) return { image_url: null };
+    return res.json();
   } catch {
-    return null;
+    return { image_url: null };
   }
 }
 
@@ -62,16 +60,13 @@ async function getAlbumSongs(albumId) {
   return res.json();
 }
 
-// ← Llama directo a Deezer desde el frontend
-async function getAlbumCover(artistName, albumTitle) {
+async function getAlbumCover(albumId) {
   try {
-    const res = await fetch(
-      `https://api.deezer.com/search/album?q=${encodeURIComponent(artistName + ' ' + albumTitle)}&limit=1`
-    );
-    const data = await res.json();
-    return data.data?.[0]?.cover_medium || null;
+    const res = await fetch(`${API}/albums/${albumId}/cover`);
+    if (!res.ok) return { cover_url: null };
+    return res.json();
   } catch {
-    return null;
+    return { cover_url: null };
   }
 }
 
