@@ -6,7 +6,8 @@ function setGreeting() {
 
 // Topbar scroll
 document.getElementById('main-scroll').addEventListener('scroll', function () {
-  const tb = document.getElementById('topbar'); if (tb) tb.classList.toggle('scrolled', this.scrollTop > 60);
+  const tb = document.getElementById('topbar');
+  if (tb) tb.classList.toggle('scrolled', this.scrollTop > 60);
 });
 
 // ── HOME ──
@@ -148,13 +149,13 @@ async function loadSongs() {
 }
 
 async function loadRecommendations() {
-  if (!currentSong) {
+  if (!window.currentSong) {
     const section = document.getElementById('rec-section');
     if (section) section.style.display = 'none';
     return;
   }
   try {
-    const recs = await getRecommendations(currentSong.id);
+    const recs = await getRecommendations(window.currentSong.id);
     if (!recs.length) {
       const section = document.getElementById('rec-section');
       if (section) section.style.display = 'none';
@@ -218,7 +219,7 @@ async function renderArtist(artistId) {
   const img = imgData.image_url || '';
 
   const artistAlbums = allAlbums.filter(a =>
-    a.artist === artistName || a.artist === songs[0]?.artist || songs.some(s => s.album_id === a.id)
+    a.artist === artistName || songs.some(s => s.album_id === a.id)
   );
 
   const albumIds = [...new Set(songs.map(s => s.album_id))];
@@ -262,7 +263,7 @@ async function renderArtist(artistId) {
       </div>
       <div class="song-list" id="artist-songs"></div>
     </div>
-    <div style="padding:24px 24px 0" id="artist-albums-section">
+    <div style="padding:24px 24px 0">
       <div class="section-head">
         <span class="section-title">Álbumes</span>
       </div>
@@ -332,7 +333,7 @@ async function renderAlbum(albumId) {
   }
 
   const cover = coverData.cover_url || '';
-  const albumTitle = album?.title || songs[0]?.album || 'Álbum';
+  const albumTitle = album?.title || 'Álbum';
 
   main.innerHTML = `
     <div class="main-hero-bg" style="background:linear-gradient(180deg,#2a1a3a 0%,transparent 100%)"></div>
@@ -452,8 +453,9 @@ async function doSearch(q) {
 async function loadSidebarArtists() {
   const artists = await getArtists();
   const list = document.getElementById('sidebar-list');
+  if (!list) return;
   list.innerHTML = artists.map(a => `
-    <div class="pl-item">
+    <div class="pl-item" onclick="navigate('artist', ${a.id})">
       <div class="pl-thumb" style="background:var(--bg4)">🎵</div>
       <div class="pl-info">
         <div class="pl-name">${a.name}</div>
@@ -466,8 +468,9 @@ async function loadSidebarArtists() {
 async function loadSidebarAlbums() {
   const albums = await getAlbums();
   const list = document.getElementById('sidebar-list');
+  if (!list) return;
   list.innerHTML = albums.map(a => `
-    <div class="pl-item">
+    <div class="pl-item" onclick="navigate('album', ${a.id})">
       <div class="pl-thumb" style="background:var(--bg4)">💿</div>
       <div class="pl-info">
         <div class="pl-name">${a.title}</div>
@@ -479,6 +482,7 @@ async function loadSidebarAlbums() {
 
 function loadSidebarPlaylists() {
   const list = document.getElementById('sidebar-list');
+  if (!list) return;
   list.innerHTML = `
     <div class="pl-item">
       <div class="pl-thumb gradient-1"></div>
