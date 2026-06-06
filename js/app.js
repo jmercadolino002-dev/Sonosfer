@@ -227,9 +227,11 @@ async function renderAlbum(albumId) {
   const main = document.getElementById('main-content');
   main.innerHTML = `<div style="padding:40px 24px;color:var(--text2)">Cargando álbum...</div>`;
 
-  const [songs, coverData] = await Promise.all([
+  
+  const [songs, coverData, album] = await Promise.all([
     getAlbumSongs(albumId),
-    getAlbumCover(albumId)
+    getAlbumCover(albumId),
+    getAlbum(albumId)
   ]);
 
   if (!songs.length) {
